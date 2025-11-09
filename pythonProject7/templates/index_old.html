@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Color Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .container {
+            position: relative;
+            display: inline-block;
+            width: 90vw;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 3px solid #00ff00;
+            background: black;
+        }
+
+        .center-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            border: 3px solid lime;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 30px;
+            border: none;
+            background: #28a745;
+            color: white;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        #switchCam {
+            background: #007bff;
+            margin-left: 10px;
+        }
+
+        #switchCam:hover {
+            background: #0069d9;
+        }
+
+        #result {
+            margin-top: 25px;
+        }
+
+        #main-color {
+            width: 120px;
+            height: 120px;
+            margin: 10px auto;
+            border-radius: 10px;
+            border: 2px solid #444;
+        }
+
+        #palette {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .swatch {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Color Detector</h1>
+    <div class="container">
+        <video id="video" autoplay playsinline></video>
+        <div class="center-box"></div>
+        <div>
+            <button id="capture">Detect Color</button>
+            <button id="switchCam">🔄 Switch Camera</button>
+        </div>
+    </div>
+
+    <div id="result" class="hidden">
+        <h2>Detected Color:</h2>
+        <div id="main-color"></div>
+        <p id="color-name"></p>
+        <h3>Matching Palette:</h3>
+        <div id="palette"></div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const captureBtn = document.getElementById('capture');
+        const switchBtn = document.getElementById('switchCam');
+        const result = document.getElementById('result');
+
+        let useFrontCamera = false;
+        let currentStream = null;
+
+        async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            const constraints = {
+                video: { facingMode: useFrontCamera ? "user" : "environment" }
+            };
+
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = currentStream;
+            } catch (err) {
+                alert("Camera access denied or unavailable: " + err.message);
+            }
+        }
+
+        switchBtn.addEventListener('click', () => {
+            useFrontCamera = !useFrontCamera;
+            startCamera();
+        });
+
+        startCamera();
+
+        captureBtn.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            const image = canvas.toDataURL('image/jpeg');
+            fetch('/detect', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image })
+            })
+            .then(res => res.json())
+            .then(data => {
+                result.classList.remove('hidden');
+                document.getElementById('main-color').style.background = data.color;
+                document.getElementById('color-name').innerText = `${data.name} (${data.color})`;
+
+                const paletteDiv = document.getElementById('palette');
+                paletteDiv.innerHTML = '';
+                data.palette.forEach(c => {
+                    const swatch = document.createElement('div');
+                    swatch.className = 'swatch';
+                    swatch.style.background = c.hex;
+                    swatch.title = `${c.name} (${c.hex})`;
+                    paletteDiv.appendChild(swatch);
+                });
+            })
+            .catch(err => console.error("Detection error:", err));
+        });
+    </script>
+</body>
+</html>

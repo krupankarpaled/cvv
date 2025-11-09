@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Advanced Color Detector - Identify colors, generate palettes, and analyze accessibility">
+    <title>Color Detector Pro | Advanced Color Analysis</title>
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-palette"></i>
+                <span>Color Detector Pro</span>
+            </div>
+            <div class="header-controls">
+                <button id="themeToggle" class="btn-icon" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Camera Section -->
+        <section class="camera-section">
+            <div class="video-container">
+                <video id="video" autoplay playsinline></video>
+                <div class="center-box"></div>
+            </div>
+            <div class="camera-controls">
+                <button id="capture" class="btn btn-primary">
+                    <i class="fas fa-camera"></i>
+                    Detect Color
+                </button>
+                <button id="switchCam" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i>
+                    Switch Camera
+                </button>
+            </div>
+        </section>
+
+        <!-- Result Section -->
+        <div id="result" class="hidden">
+            <!-- Main Color Info -->
+            <div class="result-card">
+                <h2>Detected Color</h2>
+                <div class="main-color-display">
+                    <div id="mainColor"></div>
+                    <h3 id="colorName">-</h3>
+                    <p id="hexValue" style="font-family: monospace; font-size: 1.2rem;">-</p>
+                </div>
+                
+                <div class="color-formats mt-3">
+                    <div class="format-item">
+                        <strong>RGB:</strong>
+                        <span id="rgbValue">-</span>
+                    </div>
+                    <div class="format-item">
+                        <strong>HSL:</strong>
+                        <span id="hslValue">-</span>
+                    </div>
+                    <div class="format-item">
+                        <strong>HSV:</strong>
+                        <span id="hsvValue">-</span>
+                    </div>
+                    <div class="format-item">
+                        <strong>CMYK:</strong>
+                        <span id="cmykValue">-</span>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <h4>Temperature</h4>
+                    <div class="format-item">
+                        <strong id="temperatureValue">-</strong>
+                        <span id="temperatureDesc">-</span>
+                    </div>
+                </div>
+
+                <div class="export-buttons mt-3">
+                    <button id="copyHex" class="btn btn-primary">
+                        <i class="fas fa-copy"></i>
+                        Copy Hex
+                    </button>
+                    <button id="exportJSON" class="btn btn-secondary">
+                        <i class="fas fa-download"></i>
+                        Export JSON
+                    </button>
+                    <button id="exportCSS" class="btn btn-secondary">
+                        <i class="fas fa-file-code"></i>
+                        Export CSS
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs for Different Views -->
+            <div class="result-card" style="grid-column: 1 / -1;">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="schemes">
+                        <i class="fas fa-swatchbook"></i> Color Schemes
+                    </button>
+                    <button class="tab-btn" data-tab="accessibility">
+                        <i class="fas fa-universal-access"></i> Accessibility
+                    </button>
+                    <button class="tab-btn" data-tab="history">
+                        <i class="fas fa-history"></i> History
+                    </button>
+                </div>
+
+                <!-- Schemes Tab -->
+                <div id="schemesTab" class="tab-content active">
+                    <div class="scheme-selector">
+                        <button class="scheme-btn active" data-scheme="monochromatic">Monochromatic</button>
+                        <button class="scheme-btn" data-scheme="complementary">Complementary</button>
+                        <button class="scheme-btn" data-scheme="analogous">Analogous</button>
+                        <button class="scheme-btn" data-scheme="triadic">Triadic</button>
+                        <button class="scheme-btn" data-scheme="tetradic">Tetradic</button>
+                        <button class="scheme-btn" data-scheme="split_complementary">Split Complementary</button>
+                        <button class="scheme-btn" data-scheme="shades">Shades</button>
+                        <button class="scheme-btn" data-scheme="tints">Tints</button>
+                    </div>
+                    <div id="schemeColors"></div>
+                </div>
+
+                <!-- Accessibility Tab -->
+                <div id="accessibilityTab" class="tab-content">
+                    <h3>WCAG Accessibility</h3>
+                    <p class="mb-2">Check how well this color performs on different backgrounds:</p>
+                    <div class="accessibility-section">
+                        <div id="whiteAccessibility"></div>
+                        <div id="blackAccessibility"></div>
+                    </div>
+                </div>
+
+                <!-- History Tab -->
+                <div id="historyTab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>Recent Colors</h3>
+                        <button id="clearHistory" class="btn btn-secondary">
+                            <i class="fas fa-trash"></i>
+                            Clear All
+                        </button>
+                    </div>
+                    <div id="historyList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

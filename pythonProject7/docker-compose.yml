@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: color_detector
+    ports:
+      - "10000:10000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-change-this-secret-key}
+      - DATABASE_URL=sqlite:///color_detector.db
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - color_detector_network
+
+networks:
+  color_detector_network:
+    driver: bridge
